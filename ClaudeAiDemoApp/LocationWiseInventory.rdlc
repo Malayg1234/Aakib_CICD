@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df"
+        xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition"
+        xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner"
+        xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       Data source / dataset
+       BC runtime injects data at run-time; connection string is empty.
+       ═══════════════════════════════════════════════════════════════ -->
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString></ConnectString>
+      </ConnectionProperties>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>00000000-0000-0000-0000-000000000001</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+
+  <DataSets>
+    <DataSet Name="DataSet_Result">
+      <Query>
+        <DataSourceName>DataSource</DataSourceName>
+        <CommandText></CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ItemNo">
+          <DataField>ItemNo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ItemDescription">
+          <DataField>ItemDescription</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BaseUnitOfMeasure">
+          <DataField>BaseUnitOfMeasure</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LocationCode">
+          <DataField>LocationCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LocationName">
+          <DataField>LocationName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ItemInventory">
+          <DataField>ItemInventory</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       Report layout
+       ═══════════════════════════════════════════════════════════════ -->
+  <ReportSections>
+    <ReportSection>
+
+      <Body>
+        <ReportItems>
+
+          <!-- ─── Report title ─────────────────────────────────────── -->
+          <Textbox Name="ReportTitle">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Location Wise Inventory Report</Value>
+                    <Style>
+                      <FontFamily>Segoe UI</FontFamily>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                      <Color>#1F3864</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0cm</Top>
+            <Left>0cm</Left>
+            <Height>1cm</Height>
+            <Width>26cm</Width>
+            <ZIndex>0</ZIndex>
+            <Style>
+              <Border><Style>None</Style></Border>
+            </Style>
+          </Textbox>
+
+          <!-- ─── Matrix: Items (rows) × Locations (columns) ──────── -->
+          <!--
+            Minimal correct matrix structure:
+            TablixBody     : 1 row × 1 column  → the data (inventory) cell
+            TablixRowHierarchy
+              └ Group: ItemGroup    → one row per item; TablixHeader shows ItemNo + Description
+            TablixColumnHierarchy
+              └ Group: LocationGroup → one column per location; TablixHeader shows LocationCode
+            No static members are needed; the corner is empty (standard matrix convention).
+          -->
+          <Tablix Name="MatrixInventory">
+
+            <!-- ── Body: 1 data row × 1 data column ───────────────── -->
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>3cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <!-- One body row for the item-group data -->
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <!-- Data cell: inventory for this Item × Location combination -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="InventoryDataCell">
+                          <CanGrow>true</CanGrow>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!ItemInventory.Value)</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Color>#BDD7EE</Color>
+                              <Style>Solid</Style>
+                              <Width>0.5pt</Width>
+                            </Border>
+                            <PaddingLeft>3pt</PaddingLeft>
+                            <PaddingRight>3pt</PaddingRight>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+
+            <!-- ── Column hierarchy: one column per location ─────── -->
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <!-- Dynamic member: one column per location -->
+                <TablixMember>
+                  <Group Name="LocationGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!LocationCode.Value</GroupExpression>
+                    </GroupExpressions>
+                    <SortExpressions>
+                      <SortExpression>
+                        <Value>=Fields!LocationCode.Value</Value>
+                      </SortExpression>
+                    </SortExpressions>
+                  </Group>
+                  <!-- Column header row: shows location code (height = header row height) -->
+                  <TablixHeader>
+                    <Size>0.6cm</Size>
+                    <CellContents>
+                      <Textbox Name="LocationColHeader">
+                        <CanGrow>true</CanGrow>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Fields!LocationCode.Value</Value>
+                                <Style>
+                                  <FontWeight>Bold</FontWeight>
+                                  <FontSize>9pt</FontSize>
+                                  <Color>White</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <ToolTip>=Fields!LocationName.Value</ToolTip>
+                        <Style>
+                          <BackgroundColor>#2E75B6</BackgroundColor>
+                          <Border>
+                            <Color>#1A4E7A</Color>
+                            <Style>Solid</Style>
+                            <Width>0.5pt</Width>
+                          </Border>
+                          <PaddingLeft>3pt</PaddingLeft>
+                          <PaddingRight>3pt</PaddingRight>
+                          <VerticalAlign>Middle</VerticalAlign>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                </TablixMember>
+              </TablixMembers>
+            </TablixColumnHierarchy>
+
+            <!-- ── Row hierarchy: one row per item ───────────────── -->
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <!-- Dynamic member: one row per item -->
+                <TablixMember>
+                  <Group Name="ItemGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!ItemNo.Value</GroupExpression>
+                    </GroupExpressions>
+                    <SortExpressions>
+                      <SortExpression>
+                        <Value>=Fields!ItemNo.Value</Value>
+                      </SortExpression>
+                    </SortExpressions>
+                  </Group>
+                  <!-- Row header column: shows item no. + description (width = header col width) -->
+                  <TablixHeader>
+                    <Size>7cm</Size>
+                    <CellContents>
+                      <Textbox Name="ItemRowHeader">
+                        <CanGrow>true</CanGrow>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Fields!ItemNo.Value &amp; "  " &amp; Fields!ItemDescription.Value</Value>
+                                <Style>
+                                  <FontSize>9pt</FontSize>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                          </Paragraph>
+                        </Paragraphs>
+                        <ToolTip>=Fields!BaseUnitOfMeasure.Value</ToolTip>
+                        <Style>
+                          <BackgroundColor>#D6E4F0</BackgroundColor>
+                          <Border>
+                            <Color>#BDD7EE</Color>
+                            <Style>Solid</Style>
+                            <Width>0.5pt</Width>
+                          </Border>
+                          <PaddingLeft>4pt</PaddingLeft>
+                          <PaddingRight>3pt</PaddingRight>
+                          <VerticalAlign>Middle</VerticalAlign>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+
+            <DataSetName>DataSet_Result</DataSetName>
+            <NoRowsMessage>No inventory data found for the selected filters.</NoRowsMessage>
+
+            <Top>1.2cm</Top>
+            <Left>0cm</Left>
+            <ZIndex>1</ZIndex>
+
+            <Style>
+              <Border><Style>None</Style></Border>
+            </Style>
+
+          </Tablix>
+
+        </ReportItems>
+        <Height>20cm</Height>
+        <Style />
+      </Body>
+
+      <Width>26cm</Width>
+
+      <!-- ─── Page settings ──────────────────────────────────────── -->
+      <Page>
+        <PageHeader>
+          <ReportItems>
+            <Textbox Name="PageHeaderDate">
+              <CanGrow>true</CanGrow>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=Format(Globals!ExecutionTime, "dd MMM yyyy HH:mm")</Value>
+                      <Style><FontSize>8pt</FontSize></Style>
+                    </TextRun>
+                  </TextRuns>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.15cm</Top>
+              <Left>0cm</Left>
+              <Height>0.6cm</Height>
+              <Width>13cm</Width>
+              <Style><Border><Style>None</Style></Border></Style>
+            </Textbox>
+            <Textbox Name="PageHeaderPageNo">
+              <CanGrow>true</CanGrow>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>="Page " &amp; Globals!PageNumber &amp; " of " &amp; Globals!TotalPages</Value>
+                      <Style><FontSize>8pt</FontSize></Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style><TextAlign>Right</TextAlign></Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.15cm</Top>
+              <Left>13cm</Left>
+              <Height>0.6cm</Height>
+              <Width>13cm</Width>
+              <Style><Border><Style>None</Style></Border></Style>
+            </Textbox>
+          </ReportItems>
+          <Height>0.9cm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+        </PageHeader>
+        <PageFooter>
+          <ReportItems>
+            <Textbox Name="PageFooterText">
+              <CanGrow>true</CanGrow>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Location Wise Inventory Report</Value>
+                      <Style><FontSize>8pt</FontSize><Color>Gray</Color></Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style><TextAlign>Center</TextAlign></Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.15cm</Top>
+              <Left>0cm</Left>
+              <Height>0.6cm</Height>
+              <Width>26cm</Width>
+              <Style><Border><Style>None</Style></Border></Style>
+            </Textbox>
+          </ReportItems>
+          <Height>0.9cm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+        </PageFooter>
+        <LeftMargin>1.5cm</LeftMargin>
+        <RightMargin>1.5cm</RightMargin>
+        <TopMargin>2cm</TopMargin>
+        <BottomMargin>2cm</BottomMargin>
+        <!-- A3 landscape gives plenty of room for many location columns -->
+        <PageWidth>42cm</PageWidth>
+        <PageHeight>29.7cm</PageHeight>
+      </Page>
+
+    </ReportSection>
+  </ReportSections>
+
+  <Language>en-US</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>550e8400-e29b-41d4-a716-446655440000</rd:ReportID>
+
+</Report>
