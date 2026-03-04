@@ -1,4 +1,4 @@
-codeunit 50001 "Item Location Matrix Mgmt."
+codeunit 59001 "Item Location Matrix Mgmt."
 {
     procedure SetupColumns(var LocationCodes: array[32] of Code[10]; var LocationCaptions: array[32] of Text[100]; var NoOfColumns: Integer)
     var

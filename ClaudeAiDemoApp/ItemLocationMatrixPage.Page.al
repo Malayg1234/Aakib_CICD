@@ -1,4 +1,4 @@
-page 50001 "Item Location Matrix"
+page 59002 "Item Location Matrix"
 {
     ApplicationArea = All;
     Caption = 'Item Location Inventory Matrix';

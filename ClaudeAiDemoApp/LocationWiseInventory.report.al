@@ -3,7 +3,7 @@
 /// Shows the inventory quantity of each item broken down by location.
 /// Rows = Items, Columns = Locations (matrix layout in the RDLC).
 /// </summary>
-report 50000 "Location Wise Inventory"
+report 59001 "Location Wise Inventory"
 {
     Caption = 'Location Wise Inventory';
     UsageCategory = ReportsAndAnalysis;
